@@ -12,13 +12,11 @@ def load_A_phys_interpolator_4d(filename='A_phys_table_4D_dummy.csv'):
     mu_unique = np.sort(df['mu_DM'].unique())
     sigma_unique = np.sort(df['sigma_DM'].unique())
     beta_unique = np.sort(df['beta_DM'].unique())
-    xi_unique = np.sort(df['xi_DM'].unique())
 
     shape = (
         len(mu_unique),
         len(sigma_unique),
         len(beta_unique),
-        len(xi_unique),
     )
     values = (
         df.set_index(['mu_DM', 'sigma_DM', 'beta_DM', 'xi_DM'])
@@ -27,7 +25,7 @@ def load_A_phys_interpolator_4d(filename='A_phys_table_4D_dummy.csv'):
     )
 
     interp = RegularGridInterpolator(
-        (mu_unique, sigma_unique, beta_unique, xi_unique),
+        (mu_unique, sigma_unique, beta_unique),
         values,
         bounds_error=False,
         fill_value=None,
@@ -51,5 +49,5 @@ A_interp = load_A_phys_interpolator_4d(
 )
 
 # === A_interp wrapper ===
-def cached_A_interp(mu0, sigma, beta, xi=0.0):
-    return A_interp((mu0, sigma, beta, xi))
+def cached_A_interp(mu0, sigma, beta):
+    return A_interp((mu0, sigma, beta))
