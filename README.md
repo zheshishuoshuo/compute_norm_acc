@@ -2,6 +2,10 @@
 
 # wait for exec end of Aeta
 
+## Recent updates
+- `compute_A_eta` now reuses existing `lens_samples.csv` when available instead of recomputing lens samples.
+- The normalization table is accumulated per sample to reduce peak memory usage.
+
 # now care about the mmdist
 
 
