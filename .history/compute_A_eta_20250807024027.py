@@ -90,22 +90,14 @@ def ms_distribution(ms_grid, alpha_s=-1.3, ms_star=24.5):
     return pdf
 
 
-        # 12.0 < mu0 < 14
-        # and 0 < sigmaDM < 1
-        # and 0. < sigma_alpha < 1
-        # and -1 < mu_alpha < 1
-        # and 0 < beta < 5
-    # ):
-
-
 def build_eta_grid():
-    mu_DM_grid = np.linspace(11, 15.0, 30)
-    sigma_DM_grid = np.linspace(0, 1, 30)
-    beta_DM_grid = np.linspace(0, 5, 30)
+    mu_DM_grid = np.linspace(12.5, 13.5, 100)
+    sigma_DM_grid = np.linspace(0.2, 0.5, 10)
+    beta_DM_grid = np.linspace(1.5, 2.5, 10)
     return mu_DM_grid, sigma_DM_grid, beta_DM_grid
 
 
-def compute_A_eta(n_samples=10000, ms_points=15, m_lim=26.5):
+def compute_A_eta(n_samples=100000, ms_points=15, m_lim=26.5):
     samples = sample_lens_population(n_samples)
     mu1, mu2 = compute_magnifications(
         samples["logM_star"],
