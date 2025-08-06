@@ -3,6 +3,9 @@ import pandas as pd
 from tqdm import tqdm
 from scipy.stats import norm
 
+from concurrent.futures import ProcessPoolExecutor
+from itertools import repeat
+
 import os
 import sys
 import types
@@ -49,22 +52,33 @@ def sample_lens_population(n_samples, zl=0.3, zs=2.0):
     }
 
 
-def compute_magnifications(logM_star, logRe, logMh, beta, zl, zs):
+def _solve_magnification(args):
+    """Helper to solve a single lens and return magnifications."""
+    logM_star, logRe, logMh, beta, zl, zs = args
+    model = LensModel(
+        logM_star=logM_star,
+        logM_halo=logMh,
+        logRe=logRe,
+        zl=zl,
+        zs=zs,
+    )
+    xA, xB = solve_single_lens(model, beta)
+    return model.mu_from_rt(xA), model.mu_from_rt(xB)
+
+
+def compute_magnifications(logM_star, logRe, logMh, beta, zl, zs, n_jobs=None):
     """Solve lens equation for each sample and return two magnifications."""
     n = len(logM_star)
-    mu1 = np.empty(n)
-    mu2 = np.empty(n)
-    for i in tqdm(range(n), desc="solving lenses"):
-        model = LensModel(
-            logM_star=logM_star[i],
-            logM_halo=logMh[i],
-            logRe=logRe[i],
-            zl=zl,
-            zs=zs,
+    args = zip(logM_star, logRe, logMh, beta, repeat(zl), repeat(zs))
+    with ProcessPoolExecutor(max_workers=n_jobs) as pool:
+        results = list(
+            tqdm(
+                pool.map(_solve_magnification, args),
+                total=n,
+                desc="solving lenses",
+            )
         )
-        xA, xB = solve_single_lens(model, beta[i])
-        mu1[i] = model.mu_from_rt(xA)
-        mu2[i] = model.mu_from_rt(xB)
+    mu1, mu2 = map(np.array, zip(*results))
     return mu1, mu2
 
 
@@ -102,6 +116,22 @@ def compute_A_eta(n_samples=10000, ms_points=15, m_lim=26.5):
     w_ms = np.trapz(p_det * pdf_ms[None, :], ms_grid, axis=1)
     # correct for beta sampling (beta ~ 2*beta_uniform)
     w_static = w_ms / (2.0 * samples["beta"])
+
+    lens_df = pd.DataFrame(
+        {
+            "logM_star": samples["logM_star"],
+            "logRe": samples["logRe"],
+            "logMh": samples["logMh"],
+            "beta": samples["beta"],
+            "mu1": mu1,
+            "mu2": mu2,
+            "w_ms": w_ms,
+            "w_static": w_static,
+            "zl": np.full(n_samples, samples["zl"]),
+            "zs": np.full(n_samples, samples["zs"]),
+        }
+    )
+    lens_df.to_csv("lens_samples.csv", index=False)
 
     mu_DM_grid, sigma_DM_grid, beta_DM_grid = build_eta_grid()
 
