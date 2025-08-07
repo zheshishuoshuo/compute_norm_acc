@@ -38,7 +38,7 @@ def sample_lens_population(n_samples, zl=0.3, zs=2.0):
     logRe = data["logRe"]
     beta = np.random.rand(n_samples) ** 0.5
     # sample halo mass uniformly to allow importance reweighting later
-    logMh_min, logMh_max = 11.0, 15.0
+    logMh_min, logMh_max = 9.0, 18.0
     logMh = np.random.uniform(logMh_min, logMh_max, n_samples)
     return {
         "logM_star": logM_star,
@@ -62,9 +62,10 @@ def _solve_magnification(args):
         zl=zl,
         zs=zs,
     )
-
     xA, xB = solve_single_lens(model, beta)
-    return model.mu_from_rt(xA), model.mu_from_rt(xB)
+        return model.mu_from_rt(xA), model.mu_from_rt(xB)
+    except:
+        return np.nan, np.nan  # Handle cases where magnification cannot be computed
 
 
 def compute_magnifications(logM_star, logRe, logMh, beta, zl, zs, n_jobs=None):
@@ -101,9 +102,9 @@ def ms_distribution(ms_grid, alpha_s=-1.3, ms_star=24.5):
 
 
 def build_eta_grid():
-    mu_DM_grid = np.linspace(10, 16.0, 30)
-    sigma_DM_grid = np.linspace(0, 5, 30)
-    beta_DM_grid = np.linspace(0, 10, 30)
+    mu_DM_grid = np.linspace(10, 16.0, 100)
+    sigma_DM_grid = np.linspace(0, 5, 100)
+    beta_DM_grid = np.linspace(0, 10, 100)
     return mu_DM_grid, sigma_DM_grid, beta_DM_grid
 
 
@@ -154,8 +155,8 @@ def compute_A_eta(n_samples=30000, ms_points=15, m_lim=26.5, lens_file="lens_sam
             "beta": lens_df["beta"].values,
             "zl": lens_df.get("zl", pd.Series([0.3])).iloc[0],
             "zs": lens_df.get("zs", pd.Series([2.0])).iloc[0],
-            "logMh_min": 11.0,
-            "logMh_max": 15.0,
+            "logMh_min": 9.0,
+            "logMh_max": 18.0,
         }
         mu1 = lens_df["mu1"].values
         mu2 = lens_df["mu2"].values

@@ -62,7 +62,6 @@ def _solve_magnification(args):
         zl=zl,
         zs=zs,
     )
-
     xA, xB = solve_single_lens(model, beta)
     return model.mu_from_rt(xA), model.mu_from_rt(xB)
 
@@ -101,13 +100,13 @@ def ms_distribution(ms_grid, alpha_s=-1.3, ms_star=24.5):
 
 
 def build_eta_grid():
-    mu_DM_grid = np.linspace(10, 16.0, 30)
-    sigma_DM_grid = np.linspace(0, 5, 30)
-    beta_DM_grid = np.linspace(0, 10, 30)
+    mu_DM_grid = np.linspace(12, 14.0, 30)
+    sigma_DM_grid = np.linspace(0, 1, 30)
+    beta_DM_grid = np.linspace(0, 5, 30)
     return mu_DM_grid, sigma_DM_grid, beta_DM_grid
 
 
-def compute_A_eta(n_samples=30000, ms_points=15, m_lim=26.5, lens_file="lens_samples.csv"):
+def compute_A_eta(n_samples=10000, ms_points=15, m_lim=26.5, lens_file="lens_samples.csv"):
     """Compute normalization grid A(eta).
 
     If a cached lens sample file exists with the requested number of samples,
@@ -167,7 +166,7 @@ def compute_A_eta(n_samples=30000, ms_points=15, m_lim=26.5, lens_file="lens_sam
     p_det = sel1 * sel2
     w_ms = np.trapz(p_det * pdf_ms[None, :], ms_grid, axis=1)
     # correct for beta sampling (beta ~ 2*beta_uniform)
-    w_static = w_ms # / (2.0 * samples["beta"])
+    w_static = w_ms / (2.0 * samples["beta"])
 
     lens_df["w_ms"] = w_ms
     lens_df["w_static"] = w_static
