@@ -51,7 +51,7 @@ def compute_single_A_eta(mu_DM, sigma_DM, beta_DM, n_samples=100000,
     sel1 = selection_function(mu1[:, None], m_lim, ms_grid[None, :], OBS_SCATTER_MAG)
     sel2 = selection_function(mu2[:, None], m_lim, ms_grid[None, :], OBS_SCATTER_MAG)
     p_det = sel1 * sel2
-    w_ms = np.trapz(p_det * pdf_ms[None, :], ms_grid, axis=1)
+    w_ms = np.trapezoid(p_det * pdf_ms[None, :], ms_grid, axis=1)
     w_static = w_ms  # Beta sampling correction already included in sampling
 
     # Probability of sampled halo mass under the assumed DM distribution
